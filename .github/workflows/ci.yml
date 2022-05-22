@@ -1,4 +1,4 @@
-name: CI
+name: CI # как назвать - выбираете сами
 
 on:
   push:
@@ -8,15 +8,20 @@ on:
 
 jobs:
   build:
+    permissions:
+      contents: read
+      packages: write
+    env:
+      GHCR_REGISTRY: ghcr.io
+      IMAGE: ${{ github.repository }}
+
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v3 # вытаскиваем из нашего репо исходники
+      - uses: docker/build-push-action@v1
         with:
-          node-version: 16.15.0
-      - run: npm ci
-      - run: npm run build
-      - uses: actions/upload-artifact@v3
-        with:
-          name: frontend
-          path: ./build
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+          registry: ${{ env.GHCR_REGISTRY }}
+          repository: ${{ env.IMAGE }}
+          tag_with_ref: true
